@@ -20,11 +20,9 @@ namespace TableBuilderLibrary
                 DataColumn column = CreateColumn("System.String", headers[x], readOnly, isUnique);
                 columns[x] = column;
             }
-
             table = AddColumnsToTable(table, columns);
             return table;
         }
-
         //public void buildTableSchemaFromDatabase()
         //{
         //    //Create DataSet, Update Catalog DataTable, Create DataColumns, and Add DataColumns to DataTable
@@ -36,7 +34,23 @@ namespace TableBuilderLibrary
         //    //columnCount = columns.Count();
         //}
 
-        public static DataTable PopulateTableFromCsv(this DataTable table, List<string> csvStringList, bool hasHeaders)
+        //public static DataTable PopulateTableFromCsv(this DataTable table, List<string> csvStringList, bool hasHeaders)
+        //{
+        //    int startIndex = 0;
+        //    if (hasHeaders == true)
+        //    {
+        //        startIndex = 1; //allows for skipping of headers
+        //    }
+
+        //    for (int x = startIndex; x < csvStringList.Count; x++)
+        //    {
+        //        Object[] rowContent = csvStringList[x].Replace("\"", "").Split(','); //Separates out each element in between quotes
+        //        DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent)); //creates DataRow with data types that match the table schema
+        //        table.Rows.Add(row);
+        //    }
+        //    return table;
+        //}
+        public static DataTable PopulateTableFromCsv(this DataTable table, List<string> csvStringList, char delimiter, bool hasHeaders)
         {
             int startIndex = 0;
             if (hasHeaders == true)
@@ -46,18 +60,18 @@ namespace TableBuilderLibrary
 
             for (int x = startIndex; x < csvStringList.Count; x++)
             {
-                Object[] rowContent = csvStringList[x].Replace("\"", "").Split('|'); //Separates out each element in between quotes
+                Object[] rowContent = csvStringList[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
                 DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent)); //creates DataRow with data types that match the table schema
                 table.Rows.Add(row);
             }
             return table;
         }
-        public static DataTable PopulateTableFromCsv(this DataTable table, List<string> csvStringList)
+        public static DataTable PopulateTableFromCsv(this DataTable table, List<string> csvStringList, char delimiter)
         {
             int startIndex = 1; //skips headers
             for (int x = startIndex; x < csvStringList.Count; x++)
             {
-                Object[] rowContent = csvStringList[x].Replace("\"", "").Split('|'); //Separates out each element in between quotes
+                Object[] rowContent = csvStringList[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
                 DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent)); //creates DataRow with data types that match the table schema
                 table.Rows.Add(row);
             }
@@ -179,7 +193,6 @@ namespace TableBuilderLibrary
         //        lines.Add("ColumnName=" + column.ColumnName.ToString());
         //        lines.Add("ReadOnly=" + column.ReadOnly.ToString());
         //        lines.Add("Unique=" + column.Unique.ToString());
-
         //    }
         //}
     }
