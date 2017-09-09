@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace TableBuilderLibrary
 {
@@ -23,6 +24,25 @@ namespace TableBuilderLibrary
             table = AddColumnsToTable(table, columns);
             return table;
         }
+
+        public static DataTable BuildTableSchema(string tableName, string[] headers, Type[] columnTypes)
+        {
+            //Create DataTable, Create DataColumns, and Add DataColumns to DataTable
+            DataTable table = new DataTable(tableName);
+            DataColumn[] columns = new DataColumn[headers.Length];
+            for (int x = 0; x < headers.Length; x++)
+            {
+                bool readOnly = false;
+                bool isUnique = false;
+                if (x == 0) { readOnly = true; isUnique = true; }
+
+                DataColumn column = CreateColumn(columnTypes[x].ToString(), headers[x], readOnly, isUnique);
+                columns[x] = column;
+            }
+            table = AddColumnsToTable(table, columns);
+            return table;
+        }
+
         //public void buildTableSchemaFromDatabase()
         //{
         //    //Create DataSet, Update Catalog DataTable, Create DataColumns, and Add DataColumns to DataTable
@@ -50,34 +70,54 @@ namespace TableBuilderLibrary
         //    }
         //    return table;
         //}
-        public static DataTable PopulateTableFromCsv(this DataTable table, List<string> csvStringList, char delimiter, bool hasHeaders)
+
+        public static DataTable PopulateTableFromCsv(this DataTable table, string folderPath, string fileName, char delimiter, bool hasHeaders)
         {
+            List<string> csv = System.IO.File.ReadAllLines(folderPath + "\\" + fileName + ".csv").ToList();
             int startIndex = 0;
             if (hasHeaders == true)
             {
                 startIndex = 1; //allows for skipping of headers
             }
 
-            for (int x = startIndex; x < csvStringList.Count; x++)
+            for (int x = startIndex; x < csv.Count; x++)
             {
-                Object[] rowContent = csvStringList[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
+                Object[] rowContent = csv[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
                 DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent)); //creates DataRow with data types that match the table schema
                 table.Rows.Add(row);
             }
             return table;
         }
-        public static DataTable PopulateTableFromCsv(this DataTable table, List<string> csvStringList, char delimiter)
+        //public static DataTable PopulateTableFromCsv(this DataTable table, string folderPath, string fileName, char delimiter)
+        //{
+        //    List<string> csv = System.IO.File.ReadAllLines(folderPath + "\\" + fileName + ".csv").ToList();
+        //    int startIndex = 1; //skips headers
+        //    for (int x = startIndex; x < csv.Count; x++)
+        //    {
+        //        Object[] rowContent = csv[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
+        //        DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent)); //creates DataRow with data types that match the table schema
+        //        table.Rows.Add(row);
+        //    }
+        //    return table;
+        //}
+        public static DataTable PopulateTableFromCsv(this DataTable table, string fullFilePath, char delimiter, bool hasHeaders)
         {
-            int startIndex = 1; //skips headers
-            for (int x = startIndex; x < csvStringList.Count; x++)
+            List<string> csv = System.IO.File.ReadAllLines(fullFilePath + ".csv").ToList();
+            int startIndex = 0;
+            if (hasHeaders == true)
             {
-                Object[] rowContent = csvStringList[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
+                startIndex = 1; //allows for skipping of headers
+            }
+
+            for (int x = startIndex; x < csv.Count; x++)
+            {
+                Object[] rowContent = csv[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
                 DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent)); //creates DataRow with data types that match the table schema
                 table.Rows.Add(row);
             }
             return table;
         }
-        private static DataTable AddColumnsToTable(this DataTable table, IEnumerable<DataColumn> columns)
+        public static DataTable AddColumnsToTable(this DataTable table, IEnumerable<DataColumn> columns)
         {
             foreach (DataColumn column in columns)
             {
@@ -85,7 +125,7 @@ namespace TableBuilderLibrary
             }
             return table;
         }
-        private static DataColumn CreateColumn(string columnType, string columnName, Boolean readOnly, Boolean isUnique)
+        public static DataColumn CreateColumn(string columnType, string columnName, Boolean readOnly, Boolean isUnique)
         {
             // Create new DataColumn, set DataType, 
             // ColumnName and add to DataTable.    
@@ -98,7 +138,7 @@ namespace TableBuilderLibrary
             };
             return column;
         }
-        private static DataTable SetPrimaryKeyColumn(this DataTable table, string primaryColumnName)
+        public static DataTable SetPrimaryKeyColumn(this DataTable table, string primaryColumnName)
         {
             // Make the ID column the primary key column.
             DataColumn[] PrimaryKeyColumns = new DataColumn[1];
@@ -106,7 +146,7 @@ namespace TableBuilderLibrary
             table.PrimaryKey = PrimaryKeyColumns;
             return table;
         }
-        private static DataRow CreateDataRow(DataTable table, Object[] cellData)
+        public static DataRow CreateDataRow(DataTable table, Object[] cellData)
         {
             List<string> columnNames = new List<string>();
             foreach (DataColumn column in table.Columns) //Gets list of all column names in the table
@@ -122,7 +162,7 @@ namespace TableBuilderLibrary
             }
             return newRow;
         }
-        private static Object[] AssignTypesToData(DataTable table, Object[] data)
+        public static Object[] AssignTypesToData(DataTable table, Object[] data)
         {
             Object[] convertedDatas = new Object[data.Length];
             List<DataColumn> columns = new List<DataColumn>();
@@ -163,6 +203,11 @@ namespace TableBuilderLibrary
         {
             Type columnType = table.Columns[ordinalPosition].DataType;
             return columnType;
+        }
+        public static DataTable AddRowToTable(this DataTable table, DataRow row)
+        {
+            table.Rows.Add(row);
+            return table;
         }
 
         //public void buildTableSchema()
