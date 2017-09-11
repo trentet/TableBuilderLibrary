@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>TableBuilderLibrary</id>
+    <version>1.0.0</version>
+    <title>TableBuilderLibrary</title>
+    <authors>Trent Thomas (trentfromrid)</authors>
+    <owners>Trent Thomas (trentfromrid)</owners>
+    <licenseUrl>https://github.com/trentfromrid/TableBuilderLibrary/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/trentfromrid/TableBuilderLibrary</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>This is an open-source class library with an aim to conveniently offer a variety of methods for creating and modifying DataTables.</description>
+    <releaseNotes>Initial Release</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags></tags>
+  </metadata>
+</package>
