@@ -2,16 +2,16 @@
 <package >
   <metadata>
     <id>TableBuilderLibrary</id>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <title>TableBuilderLibrary</title>
     <authors>Trent Thomas (trentfromrid)</authors>
     <owners>Trent Thomas (trentfromrid)</owners>
     <licenseUrl>https://github.com/trentfromrid/TableBuilderLibrary/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/trentfromrid/TableBuilderLibrary</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>This is an open-source class library with an aim to conveniently offer a variety of methods for creating and modifying DataTables.</description>
-    <releaseNotes>Initial Release</releaseNotes>
-    <copyright>Copyright 2017</copyright>
+    <description>This is an open-source class library with an aim to conveniently offer a variety of methods for creating and modifying DataTables. Note: Most exception handling is still under development. </description>
+    <releaseNotes>Fixed a few unhandled situations. Added support for GUIDs. Added additional overloads and methods. Better support for Type variables. </releaseNotes>
+    <copyright>Copyright 2018</copyright>
     <tags></tags>
   </metadata>
 </package>

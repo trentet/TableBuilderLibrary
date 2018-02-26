@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace TableBuilderLibrary
 {
@@ -81,20 +82,6 @@ namespace TableBuilderLibrary
                 table.PrimaryKey = key;
             }
             return table;
-            ////Create DataTable, Create DataColumns, and Add DataColumns to DataTable
-            //DataTable table = new DataTable(tableName);
-            //DataColumn[] columns = new DataColumn[headers.Length];
-            //for (int x = 0; x < headers.Length; x++)
-            //{
-            //    bool readOnly = false;
-            //    bool isUnique = false;
-            //    if (x == 0) { readOnly = true; isUnique = true; }
-
-            //    DataColumn column = CreateColumn(columnTypes[x].ToString(), headers[x], readOnly, isUnique);
-            //    columns[x] = column;
-            //}
-            //table = AddColumnsToTable(table, columns);
-            //return table;
         }
         //public void buildTableSchemaFromDatabase()
         //{
@@ -106,7 +93,7 @@ namespace TableBuilderLibrary
         //    table = addColumnsToTable(columns);
         //    //columnCount = columns.Count();
         //}
-        public static DataTable PopulateTableFromCsv(this DataTable table, string folderPath, string fileName, char delimiter, bool hasHeaders)
+        public static DataTable PopulateTableFromCsv(this DataTable table, string folderPath, string fileName, char delimiter, bool hasHeaders, bool needsGuid)
         {
             List<string> csv = System.IO.File.ReadAllLines(folderPath + "\\" + fileName + ".csv").ToList();
             int startIndex = 0;
@@ -117,13 +104,13 @@ namespace TableBuilderLibrary
 
             for (int x = startIndex; x < csv.Count; x++)
             {
-                Object[] rowContent = csv[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
-                DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent)); //creates DataRow with data types that match the table schema
+                Object[] rowContent = SplitCSV(csv[x]).ToArray();
+                DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent, needsGuid), needsGuid); //creates DataRow with data types that match the table schema
                 table.Rows.Add(row);
             }
             return table;
         }
-        public static DataTable PopulateTableFromCsv(this DataTable table, string fullFilePath, char delimiter, bool hasHeaders)
+        public static DataTable PopulateTableFromCsv(this DataTable table, string fullFilePath, char delimiter, bool hasHeaders, bool needsGuid)
         {
             List<string> csv = System.IO.File.ReadAllLines(fullFilePath + ".csv").ToList();
             int startIndex = 0;
@@ -136,7 +123,7 @@ namespace TableBuilderLibrary
             {
                 csv[x] = csv[x].Insert(0, "");
                 Object[] rowContent = csv[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
-                DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent)); //creates DataRow with data types that match the table schema
+                DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent, needsGuid), needsGuid); //creates DataRow with data types that match the table schema
                 table.Rows.Add(row);
                 if (table.Rows.Count % 1000 == 0)
                 {
@@ -145,7 +132,7 @@ namespace TableBuilderLibrary
             }
             return table;
         }
-        public static DataTable PopulateTableFromCsv(this DataTable table, List<string> csv, char delimiter, bool hasHeaders)
+        public static DataTable PopulateTableFromCsv(this DataTable table, List<string> csv, char delimiter, bool hasHeaders, bool needsGuid)
         {
             int startIndex = 0;
             if (hasHeaders == true)
@@ -157,7 +144,7 @@ namespace TableBuilderLibrary
             {
                 csv[x] = csv[x].Insert(0, "");
                 Object[] rowContent = csv[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
-                DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent)); //creates DataRow with data types that match the table schema
+                DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent, needsGuid),needsGuid); //creates DataRow with data types that match the table schema
                 table.Rows.Add(row);
                 if (table.Rows.Count % 1000 == 0)
                 {
@@ -180,7 +167,7 @@ namespace TableBuilderLibrary
             // ColumnName and add to DataTable.    
             DataColumn column = new DataColumn
             {
-                DataType = columnType,//Type.GetType(columnType),
+                DataType = columnType,
                 ColumnName = columnName,
                 ReadOnly = readOnly,
                 Unique = isUnique
@@ -195,7 +182,7 @@ namespace TableBuilderLibrary
             table.PrimaryKey = PrimaryKeyColumns;
             return table;
         }
-        public static DataRow CreateDataRow(DataTable table, Object[] cellData)
+        public static DataRow CreateDataRow(DataTable table, Object[] cellData, bool needsGuid)
         {
             List<string> columnNames = new List<string>();
             foreach (DataColumn column in table.Columns) //Gets list of all column names in the table
@@ -209,7 +196,7 @@ namespace TableBuilderLibrary
             DataRow newRow = table.NewRow();
             for (int x = 0; x < newRow.Table.Columns.Count; x++)
             {
-                if (newRow.Table.Columns[x].DataType == Type.GetType("System.Guid"))
+                if (newRow.Table.Columns[x].DataType == Type.GetType("System.Guid") && needsGuid == true)
                 {
                     offset++;
                 }
@@ -224,18 +211,26 @@ namespace TableBuilderLibrary
         {
             e.Row[0] = Guid.NewGuid();
         }
-        public static Object[] AssignTypesToData(DataTable table, Object[] data)
+        public static Object[] AssignTypesToData(DataTable table, Object[] data, bool needsGuid)
         {
             Object[] convertedDatas = new Object[data.Length];
             List<DataColumn> columns = new List<DataColumn>();
             int offset = 0;
-            if (table.Columns[0].DataType.Name.ToString().Equals("Guid", StringComparison.OrdinalIgnoreCase))
+            if (table.Columns[0].DataType.Name.ToString().Equals("Guid", StringComparison.OrdinalIgnoreCase) && needsGuid == true)
             {
                 offset = 1;
             }
             for (int x = 0; x < data.Length; x++)
             {
-                convertedDatas[x] = Convert.ChangeType(data[x], table.Columns[x + offset].DataType);
+                if (table.Columns[x + offset].DataType == typeof(Guid))
+                {
+                    convertedDatas[x] = new Guid(data[x].ToString());
+                }
+                else
+                {
+                    convertedDatas[x] = Convert.ChangeType(data[x], table.Columns[x + offset].DataType);
+                }
+                
             }
             return convertedDatas;
         }
@@ -285,13 +280,6 @@ namespace TableBuilderLibrary
         }
         public static DataTable CSVtoDataTable(string tableName, Type[] tableColumnTypes, List<string> csv, char delimiter, bool defaultSchema, bool needsGuid)
         {
-            //Check if file exists
-            //if (csv.Count)) //If exists
-            //{
-            //Console.WriteLine("CSV file exists. Importing...");
-            //Import file
-            //List<string> csv = ImportCsvToStringList(tableFilePath);
-
             DataTable table = new DataTable();
             if (defaultSchema == true)
             {
@@ -302,25 +290,20 @@ namespace TableBuilderLibrary
                 table = BuildTableSchema(tableName, GetHeaders(csv, delimiter), tableColumnTypes, needsGuid);
             }
 
-            //Populate table from file
-            //if (tableFilePath.EndsWith(".csv"))
-            //{
-            //    tableFilePath = tableFilePath.Remove(tableFilePath.Length - 4);
-            //}
-
-            table.PopulateTableFromCsv(csv, delimiter, true);
+            table.PopulateTableFromCsv(csv, delimiter, true, needsGuid);
             return table;
-            //}
-            //else //If not exists
-            //{
-            //    Console.WriteLine("CSV file does not exists. Generating...");
-            //    //Build table from scratch
-            //    DataTable table = TableBuilderLibrary.TableBuilder.BuildTableSchema(Configuration.TableName, Configuration.TableHeaders, Configuration.TableColumnTypes);
-            //    ExportDataTableToCSV(table, Configuration.TableFolderPath, Configuration.TableName);
-            //    Console.WriteLine("CSV file saved.");
-            //    return table;
-            //}
         }
+
+        public static IEnumerable<string> SplitCSV(string input)
+        {
+            Regex csvSplit = new Regex("(?:^|,)(\"(?:[^\"]+|\"\")*\"|[^,]*)", RegexOptions.Compiled);
+
+            foreach (Match match in csvSplit.Matches(input))
+            {
+                yield return match.Value.TrimStart(',').TrimStart('"').TrimEnd('"');
+            }
+        }
+
         //public void exportTableSchemaToFile(DataTable table)
         //{
         //    List<string> lines = new List<string>();
