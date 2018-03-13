@@ -54,6 +54,7 @@ namespace TableBuilderLibrary
             
             return table;
         }
+
         public static DataTable BuildTableSchema(string tableName, string[] headers, Type[] columnTypes, bool needsGuid)
         {
             //Create DataTable, Create DataColumns, and Add DataColumns to DataTable
@@ -83,16 +84,7 @@ namespace TableBuilderLibrary
             }
             return table;
         }
-        //public void buildTableSchemaFromDatabase()
-        //{
-        //    //Create DataSet, Update Catalog DataTable, Create DataColumns, and Add DataColumns to DataTable
 
-        //    table = Dataset.Tables.Add(Configuration.TableName); //Get name of table
-
-        //    List<DataColumn> columns = new List<DataColumn>(new DataColumn[] { columnListGoesHere });
-        //    table = addColumnsToTable(columns);
-        //    //columnCount = columns.Count();
-        //}
         public static DataTable PopulateTableFromCsv(this DataTable table, string folderPath, string fileName, char delimiter, bool hasHeaders, bool needsGuid)
         {
             List<string> csv = System.IO.File.ReadAllLines(folderPath + "\\" + fileName + ".csv").ToList();
@@ -110,6 +102,7 @@ namespace TableBuilderLibrary
             }
             return table;
         }
+
         public static DataTable PopulateTableFromCsv(this DataTable table, string fullFilePath, char delimiter, bool hasHeaders, bool needsGuid)
         {
             List<string> csv = System.IO.File.ReadAllLines(fullFilePath + ".csv").ToList();
@@ -132,6 +125,7 @@ namespace TableBuilderLibrary
             }
             return table;
         }
+
         public static DataTable PopulateTableFromCsv(this DataTable table, List<string> csv, char delimiter, bool hasHeaders, bool needsGuid)
         {
             int startIndex = 0;
@@ -153,6 +147,7 @@ namespace TableBuilderLibrary
             }
             return table;
         }
+
         public static DataTable AddColumnsToTable(this DataTable table, IEnumerable<DataColumn> columns)
         {
             foreach (DataColumn column in columns)
@@ -161,6 +156,7 @@ namespace TableBuilderLibrary
             }
             return table;
         }
+
         public static DataColumn CreateColumn(Type columnType, string columnName, Boolean readOnly, Boolean isUnique)
         {
             // Create new DataColumn, set DataType, 
@@ -174,6 +170,7 @@ namespace TableBuilderLibrary
             };
             return column;
         }
+
         public static DataTable SetPrimaryKeyColumn(this DataTable table, string primaryColumnName)
         {
             // Make the ID column the primary key column.
@@ -182,6 +179,7 @@ namespace TableBuilderLibrary
             table.PrimaryKey = PrimaryKeyColumns;
             return table;
         }
+
         public static DataRow CreateDataRow(DataTable table, Object[] cellData, bool needsGuid)
         {
             List<string> columnNames = new List<string>();
@@ -207,10 +205,12 @@ namespace TableBuilderLibrary
             }
             return newRow;
         }
-        private static void Table_NewRow(object sender, DataTableNewRowEventArgs e)
+
+        static void Table_NewRow(object sender, DataTableNewRowEventArgs e)
         {
             e.Row[0] = Guid.NewGuid();
         }
+
         public static Object[] AssignTypesToData(DataTable table, Object[] data, bool needsGuid)
         {
             Object[] convertedDatas = new Object[data.Length];
@@ -234,6 +234,7 @@ namespace TableBuilderLibrary
             }
             return convertedDatas;
         }
+
         public static List<object> GetAllDataFromColumn(DataTable table, string columnName)
         {
             int columnIndex = table.Columns[columnName].Ordinal;
@@ -244,6 +245,7 @@ namespace TableBuilderLibrary
             }
             return listOfDataFromColumn;
         }
+
         public static List<object> GetAllDataFromColumn(DataTable table, int columnIndex)
         {
             List<object> listOfDataFromColumn = new List<object>(table.Rows.Count);
@@ -253,31 +255,57 @@ namespace TableBuilderLibrary
             }
             return listOfDataFromColumn;
         }
+
         public static Type GetColumnType(DataTable table, string columnName)
         {
             Type columnType = table.Columns[columnName].DataType;
             return columnType;
         }
+
         public static Type GetColumnType(DataTable table, int ordinalPosition)
         {
             Type columnType = table.Columns[ordinalPosition].DataType;
             return columnType;
         }
+
         public static DataTable AddRowToTable(this DataTable table, DataRow row)
         {
-            table.Rows.Add(row);
+            table.Rows.Add(row.ItemArray);
             return table;
         }
+
+        public static DataTable AddRowsToTable(this DataTable table, List<DataRow> rows)
+        {
+            for (int x = 0; x < rows.Count; x++)
+            {
+                table.Rows.Add(rows[x].ItemArray);
+            }
+            
+            return table;
+        }
+
         public static string[] GetHeaders(List<string> lines, char delimiter)
         {
             string[] headers = lines[0].Split(delimiter);
             return headers;
         }
+
         public static string[] GetHeaders(string filePath, char delimiter)
         {
             string[] headers = File.ReadLines(filePath).First().Split(delimiter).ToList().Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
             return headers;
         }
+
+        public static string[] GetHeaders(this DataTable table)
+        {
+            string[] headers = new string[table.Columns.Count];
+            for (int x = 0; x < table.Columns.Count; x++)
+            {
+                headers[x] = table.Columns[x].ColumnName;
+            }
+            return headers;
+        }
+
         public static DataTable CSVtoDataTable(string tableName, Type[] tableColumnTypes, List<string> csv, char delimiter, bool defaultSchema, bool needsGuid)
         {
             DataTable table = new DataTable();
@@ -303,6 +331,7 @@ namespace TableBuilderLibrary
                 yield return match.Value.TrimStart(',').TrimStart('"').TrimEnd('"');
             }
         }
+
 
         //public void exportTableSchemaToFile(DataTable table)
         //{
