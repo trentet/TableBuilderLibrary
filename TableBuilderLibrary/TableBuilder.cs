@@ -115,8 +115,8 @@ namespace TableBuilderLibrary
             for (int x = startIndex; x < csv.Count; x++)
             {
                 csv[x] = csv[x].Insert(0, "");
-                Object[] rowContent = csv[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
-                DataRow row = CreateDataRow(table, AssignTypesToData(table, rowContent, needsGuid), needsGuid); //creates DataRow with data types that match the table schema
+                object[] itemArray = SplitCSV(csv[x]).ToArray<object>();// csv[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
+                DataRow row = CreateDataRow(table, AssignTypesToData(table, itemArray, needsGuid), needsGuid); //creates DataRow with data types that match the table schema
                 table.Rows.Add(row);
                 if (table.Rows.Count % 1000 == 0)
                 {
@@ -187,7 +187,7 @@ namespace TableBuilderLibrary
             {
                 columnNames.Add(column.ColumnName);
             }
-            string name = table.Columns[0].DataType.Name.ToString();
+            //string name = table.Columns[0].DataType.Name.ToString();
             int offset = 0;
             table.TableNewRow += new
                 DataTableNewRowEventHandler(Table_NewRow);
@@ -211,12 +211,12 @@ namespace TableBuilderLibrary
             e.Row[0] = Guid.NewGuid();
         }
 
-        public static Object[] AssignTypesToData(DataTable table, Object[] data, bool needsGuid)
+        public static object[] AssignTypesToData(DataTable table, Object[] data, bool needsGuid)
         {
-            Object[] convertedDatas = new Object[data.Length];
+            object[] convertedDatas = new object[data.Length];
             List<DataColumn> columns = new List<DataColumn>();
             int offset = 0;
-            if (table.Columns[0].DataType.Name.ToString().Equals("Guid", StringComparison.OrdinalIgnoreCase) && needsGuid == true)
+            if (table.Columns[0].DataType == typeof(Guid) && needsGuid == true)
             {
                 offset = 1;
             }
