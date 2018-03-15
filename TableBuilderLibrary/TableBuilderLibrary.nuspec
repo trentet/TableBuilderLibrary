@@ -2,15 +2,15 @@
 <package >
   <metadata>
     <id>TableBuilderLibrary</id>
-    <version>1.1.2</version>
+    <version>1.1.3</version>
     <title>TableBuilderLibrary</title>
-    <authors>Trent Thomas (trentfromrid)</authors>
-    <owners>Trent Thomas (trentfromrid)</owners>
-    <licenseUrl>https://github.com/trentfromrid/TableBuilderLibrary/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/trentfromrid/TableBuilderLibrary</projectUrl>
+    <authors>Trent Thomas (trentet)</authors>
+    <owners>Trent Thomas (trentet)</owners>
+    <licenseUrl>https://github.com/trentet/TableBuilderLibrary/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/trentet/TableBuilderLibrary</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>This is an open-source class library with an aim to conveniently offer a variety of methods for creating and modifying DataTables. Note: Most exception handling is still under development. </description>
-    <releaseNotes>Updated accessibility of Table_NewRow. Added method for adding a list of DataRow to a table. Updated AddRowToTable to use DataRow.ItemArray instead of DataRow. Added method for getting string[] of ColumnNames from a DataTable.</releaseNotes>
+    <releaseNotes>Switched row item splitting to a regex method that correctly parses rows with quotes. Removed unused variable in CreateDataRow. Updated AssignTypesToData to use typeof(Guid) for comparison instead of ToString. Switched that method to use object[] instead of Object[].</releaseNotes>
     <copyright>Copyright 2018</copyright>
     <tags></tags>
   </metadata>
