@@ -115,7 +115,7 @@ namespace TableBuilderLibrary
             for (int x = startIndex; x < csv.Count; x++)
             {
                 csv[x] = csv[x].Insert(0, "");
-                object[] itemArray = SplitCSV(csv[x]).ToArray<object>();// csv[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
+                object[] itemArray = SplitCSV(csv[x]).ToArray().ToArray<object>();// csv[x].Replace("\"", "").Split(delimiter); //Separates out each element in between quotes
                 DataRow row = CreateDataRow(table, AssignTypesToData(table, itemArray, needsGuid), needsGuid); //creates DataRow with data types that match the table schema
                 table.Rows.Add(row);
                 if (table.Rows.Count % 1000 == 0)
@@ -292,7 +292,8 @@ namespace TableBuilderLibrary
 
         public static string[] GetHeaders(string filePath, char delimiter)
         {
-            string[] headers = File.ReadLines(filePath).First().Split(delimiter).ToList().Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+            //string[] headers = File.ReadLines(filePath).First().Split(delimiter).ToList().Where(s => !string.IsNullOrWhiteSpace(s)).ToArray(); //.NET 4.5 Version
+            string[] headers = ReadAllLines(filePath).First().Split(delimiter).ToList().Where(s => !string.IsNullOrEmpty(s)).ToArray(); //.NET 3.5 Version
             return headers;
         }
 
@@ -332,6 +333,20 @@ namespace TableBuilderLibrary
             }
         }
 
+        public static string[] ReadAllLines(string path)
+        {
+            if (File.Exists(path))
+            {
+                List<string> lines = new List<string>();
+                using (var reader = new StreamReader(path))
+                {
+                    while (!reader.EndOfStream)
+                        lines.Add(reader.ReadLine());
+                }
+                return lines.ToArray();
+            }
+            return null;
+        }
 
         //public void exportTableSchemaToFile(DataTable table)
         //{
